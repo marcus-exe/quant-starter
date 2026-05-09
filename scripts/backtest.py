@@ -16,16 +16,28 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from src.backtest.runner import run
-from src.data.store import get_or_fetch
+from src.data.store import get_or_fetch_panel
 from src.db.engine import get_session
 from src.db.models import StrategyRun
+from src.strategies.momentum import TimeSeriesMomentum
 from src.strategies.sma_cross import SmaCross
+from src.strategies.xsmom import CrossSectionalMomentum
 
-STRATEGIES = {"sma_cross": SmaCross}
+STRATEGIES = {
+    "sma_cross": SmaCross,
+    "tsmom": TimeSeriesMomentum,
+    "xsmom": CrossSectionalMomentum,
+}
 
 
 def _config_hash(cfg: dict) -> str:
     return hashlib.sha256(json.dumps(cfg, sort_keys=True, default=str).encode()).hexdigest()[:16]
+
+
+def _resolve_symbols(universe: dict) -> list[str]:
+    if "symbols" in universe:
+        return list(universe["symbols"])
+    return [universe["symbol"]]
 
 
 @click.command()
@@ -37,10 +49,13 @@ def main(config: str) -> None:
     strategy = strat_cls(**cfg["params"])
 
     u = cfg["universe"]
-    prices = get_or_fetch(u["symbol"], u["start"], u.get("end"), u.get("interval", "1d"))
+    symbols = _resolve_symbols(u)
+    close = get_or_fetch_panel(symbols, u["start"], u.get("end"), u.get("interval", "1d"))
+    if close.empty:
+        raise SystemExit(f"no data for symbols={symbols}")
 
     started = datetime.now(timezone.utc)
-    result = run(prices, strategy, **cfg["backtest"])
+    result = run(close, strategy, **cfg["backtest"])
     finished = datetime.now(timezone.utc)
 
     run_id = uuid.uuid4()
@@ -49,7 +64,8 @@ def main(config: str) -> None:
         "sharpe": result.sharpe,
         "max_drawdown": result.max_drawdown,
         "n_trades": result.n_trades,
-        "symbol": u["symbol"],
+        "symbols": symbols,
+        "n_assets": len(symbols),
     }
     with get_session() as s:
         s.add(
@@ -64,7 +80,8 @@ def main(config: str) -> None:
             )
         )
 
-    logger.info(f"{cfg['strategy']} on {u['symbol']}: {result.summary()}")
+    label = symbols[0] if len(symbols) == 1 else f"{len(symbols)} assets"
+    logger.info(f"{cfg['strategy']} on {label}: {result.summary()}")
     logger.info(f"run_id={run_id}")
 
 

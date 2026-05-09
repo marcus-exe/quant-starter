@@ -1,4 +1,10 @@
-"""Strategy ABC. Returns long/flat signal series aligned to price index."""
+"""Strategy ABC.
+
+Inputs: wide close DataFrame (index=ts, columns=symbols).
+Outputs: bool DataFrame same shape — True = long, False = flat — per (ts, symbol).
+
+Single-asset = single-column DataFrame.
+"""
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -10,5 +16,5 @@ class Strategy(ABC):
     name: str
 
     @abstractmethod
-    def signals(self, prices: pd.DataFrame) -> pd.Series:
-        """Return boolean Series: True = long, False = flat."""
+    def signals(self, close: pd.DataFrame) -> pd.DataFrame:
+        ...

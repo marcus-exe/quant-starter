@@ -8,21 +8,31 @@ from src.risk.sizing import fixed_fraction, kelly
 from src.strategies.sma_cross import SmaCross
 
 
-def _trending_prices(n: int = 300, seed: int = 0) -> pd.DataFrame:
+def _trending_close(n: int = 300, seed: int = 0, symbols: tuple[str, ...] = ("AAA",)) -> pd.DataFrame:
     rng = np.random.default_rng(seed)
-    drift = np.linspace(0, 0.5, n)
-    noise = rng.normal(0, 0.01, n)
-    close = 100 * np.exp(np.cumsum(noise) + drift / n)
     idx = pd.date_range("2020-01-01", periods=n, freq="D")
-    return pd.DataFrame({"close": close}, index=idx)
+    cols = {}
+    for i, sym in enumerate(symbols):
+        drift = np.linspace(0, 0.5 + 0.1 * i, n)
+        noise = rng.normal(0, 0.01, n)
+        cols[sym] = 100 * np.exp(np.cumsum(noise) + drift / n)
+    return pd.DataFrame(cols, index=idx)
 
 
 def test_sma_cross_signals_align():
     s = SmaCross(fast=10, slow=50)
-    prices = _trending_prices()
-    sig = s.signals(prices)
-    assert sig.index.equals(prices.index)
-    assert sig.dtype == bool
+    close = _trending_close()
+    sig = s.signals(close)
+    assert sig.index.equals(close.index)
+    assert sig.shape == close.shape
+    assert (sig.dtypes == bool).all()
+
+
+def test_sma_cross_multi_asset():
+    s = SmaCross(fast=10, slow=50)
+    close = _trending_close(symbols=("AAA", "BBB", "CCC"))
+    sig = s.signals(close)
+    assert list(sig.columns) == ["AAA", "BBB", "CCC"]
 
 
 def test_sma_cross_rejects_bad_params():

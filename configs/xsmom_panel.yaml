@@ -1,0 +1,24 @@
+strategy: xsmom
+params:
+  lookback: 252       # ~12 months daily
+  skip: 21            # ~1 month skip (mean-reversion guard)
+  top_n: 3            # long top 3 ranked symbols each bar
+
+universe:
+  symbols:
+    - SPY     # US large cap
+    - QQQ     # US tech
+    - IWM     # US small cap
+    - EFA     # developed ex-US
+    - EEM     # emerging markets
+    - TLT     # long treasuries
+    - GLD     # gold
+    - DBC     # commodities
+  start: "2010-01-01"
+  end: null
+  interval: 1d
+
+backtest:
+  init_cash: 100000
+  fees: 0.0005
+  slippage: 0.0005

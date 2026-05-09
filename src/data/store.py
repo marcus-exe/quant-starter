@@ -80,6 +80,40 @@ def get_or_fetch(
     return load(symbol, interval, start=start, end=end)
 
 
+def load_panel(
+    symbols: list[str],
+    interval: str = "1d",
+    start: str | pd.Timestamp | None = None,
+    end: str | pd.Timestamp | None = None,
+    field: str = "close",
+) -> pd.DataFrame:
+    """Wide DataFrame: index=ts, columns=symbols, values=`field`."""
+    series: dict[str, pd.Series] = {}
+    for sym in symbols:
+        df = load(sym, interval, start=start, end=end)
+        if df.empty:
+            continue
+        series[sym] = df[field].astype(float)
+    if not series:
+        return pd.DataFrame()
+    panel = pd.DataFrame(series).sort_index()
+    panel.index.name = "ts"
+    return panel.ffill()
+
+
+def get_or_fetch_panel(
+    symbols: list[str],
+    start: str | pd.Timestamp,
+    end: str | pd.Timestamp | None = None,
+    interval: str = "1d",
+    field: str = "close",
+) -> pd.DataFrame:
+    """DB-first cache for a list of symbols. Fetches misses from vendor."""
+    for sym in symbols:
+        get_or_fetch(sym, start, end, interval)
+    return load_panel(symbols, interval, start=start, end=end, field=field)
+
+
 def export_parquet(symbol: str, interval: str = "1d") -> Path:
     """Dump symbol/interval slice to Parquet under data/raw/."""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
