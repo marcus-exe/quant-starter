@@ -22,7 +22,7 @@ services:
     container_name: quant_pgadmin
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@local}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@local.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
       PGADMIN_CONFIG_SERVER_MODE: "False"
     ports:
@@ -59,8 +59,8 @@ services:
     container_name: quant_jupyter
     restart: unless-stopped
     command: >
-      uv run jupyter lab
-      --ip=0.0.0.0 --port=8888 --no-browser
+      uv run --extra dev jupyter lab
+      --ip=0.0.0.0 --port=8888 --no-browser --allow-root
       --ServerApp.token=${JUPYTER_TOKEN:-quant}
       --ServerApp.root_dir=/app
     ports:

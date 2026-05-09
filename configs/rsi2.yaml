@@ -1,0 +1,16 @@
+strategy: rsi2
+params:
+  period: 2
+  entry: 5.0
+  exit: 70.0
+
+universe:
+  symbol: SPY
+  start: "2010-01-01"
+  end: null
+  interval: 1d
+
+backtest:
+  init_cash: 100000
+  fees: 0.0005
+  slippage: 0.0005

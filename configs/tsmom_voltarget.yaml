@@ -1,0 +1,31 @@
+strategy: tsmom
+params:
+  lookback: 252
+  skip: 21
+  threshold: 0.0
+
+overlay:
+  type: vol_target
+  params:
+    target_vol: 0.10
+    lookback: 20
+    max_leverage: 2.0
+
+universe:
+  symbols:
+    - SPY
+    - QQQ
+    - IWM
+    - EFA
+    - EEM
+    - TLT
+    - GLD
+    - DBC
+  start: "2010-01-01"
+  end: null
+  interval: 1d
+
+backtest:
+  init_cash: 100000
+  fees: 0.0005
+  slippage: 0.0005

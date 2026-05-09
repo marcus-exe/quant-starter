@@ -1,0 +1,29 @@
+strategy: xsmom
+params:
+  lookback: 252
+  skip: 21
+  top_n: 3
+
+overlay:
+  type: risk_parity
+  params:
+    lookback: 60
+
+universe:
+  symbols:
+    - SPY
+    - QQQ
+    - IWM
+    - EFA
+    - EEM
+    - TLT
+    - GLD
+    - DBC
+  start: "2010-01-01"
+  end: null
+  interval: 1d
+
+backtest:
+  init_cash: 100000
+  fees: 0.0005
+  slippage: 0.0005

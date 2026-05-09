@@ -1,0 +1,19 @@
+strategy: pairs
+params:
+  window: 60
+  entry_z: 2.0
+  exit_z: 0.5
+  leg_size: 0.5
+
+universe:
+  symbols:
+    - KO
+    - PEP
+  start: "2010-01-01"
+  end: null
+  interval: 1d
+
+backtest:
+  init_cash: 100000
+  fees: 0.0005
+  slippage: 0.0005

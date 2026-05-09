@@ -1,0 +1,17 @@
+strategy: vix_carry
+params:
+  target: SVXY
+  short_proxy: ^VIX
+  long_proxy: ^VIX3M
+  smooth: 5
+
+universe:
+  symbol: SVXY
+  start: "2012-10-04"   # SVXY inception ~ Oct 2011, VIX3M from late 2002
+  end: null
+  interval: 1d
+
+backtest:
+  init_cash: 100000
+  fees: 0.0005
+  slippage: 0.0005

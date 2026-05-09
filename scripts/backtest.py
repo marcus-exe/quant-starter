@@ -19,15 +19,7 @@ from src.backtest.runner import run
 from src.data.store import get_or_fetch_panel
 from src.db.engine import get_session
 from src.db.models import StrategyRun
-from src.strategies.momentum import TimeSeriesMomentum
-from src.strategies.sma_cross import SmaCross
-from src.strategies.xsmom import CrossSectionalMomentum
-
-STRATEGIES = {
-    "sma_cross": SmaCross,
-    "tsmom": TimeSeriesMomentum,
-    "xsmom": CrossSectionalMomentum,
-}
+from src.strategies.registry import OVERLAYS, STRATEGIES
 
 
 def _config_hash(cfg: dict) -> str:
@@ -47,6 +39,11 @@ def main(config: str) -> None:
 
     strat_cls = STRATEGIES[cfg["strategy"]]
     strategy = strat_cls(**cfg["params"])
+
+    if "overlay" in cfg and cfg["overlay"]:
+        overlay_cfg = cfg["overlay"]
+        overlay_cls = OVERLAYS[overlay_cfg["type"]]
+        strategy = overlay_cls(base=strategy, **overlay_cfg.get("params", {}))
 
     u = cfg["universe"]
     symbols = _resolve_symbols(u)

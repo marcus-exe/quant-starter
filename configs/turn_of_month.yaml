@@ -1,0 +1,15 @@
+strategy: turn_of_month
+params:
+  days_end: 4
+  days_start: 3
+
+universe:
+  symbol: SPY
+  start: "2010-01-01"
+  end: null
+  interval: 1d
+
+backtest:
+  init_cash: 100000
+  fees: 0.0005
+  slippage: 0.0005
